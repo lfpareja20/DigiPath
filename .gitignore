@@ -1,0 +1,46 @@
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Production
+/dist
+/build
+
+# Env files
+.env
+.env.local
+.env.*.local
+
+# Vite
+/.vite
+
+# Typescript
+*.tsbuildinfo
+
+# Editor directories and files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Optional: local env for OneDrive
+*.local
+
+# Lockfiles (if you intentionally want to ignore these, otherwise keep them)
+# package-lock.json
+# pnpm-lock.yaml
+# yarn.lock
