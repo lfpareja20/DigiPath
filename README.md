@@ -1,4 +1,7 @@
 # Avance_Madurez_Digital
+# Avance_Madurez_Digital
+
+Avance del proyecto. La pantalla inicial.
 
 Proyecto creado con Vite + React + TypeScript.
 
@@ -14,3 +17,6 @@ Instrucciones rápidas:
      git remote add origin <URL_DEL_REPO>
      git push -u origin main
 
+Notas:
+- He combinado el resumen local con las instrucciones del README remoto para conservar ambas.
+- Si deseas, elimina la copia de seguridad `.gitignore.backup` creada durante la resolución del merge.
