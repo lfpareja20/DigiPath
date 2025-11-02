@@ -1,7 +1,4 @@
-# Avance_Madurez_Digital
-# Avance Madurez Digital
-
-Proyecto front-end que muestra la pantalla inicial de la aplicación.
+# DigiPath
 
 ## Tecnologías
 
@@ -18,5 +15,3 @@ Para ejecutar el proyecto localmente:
 npm install
 npm run dev
 ```
-
-La aplicación estará disponible en `http://localhost:5173`
