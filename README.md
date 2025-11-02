@@ -6,14 +6,14 @@ Frontend para un sistema predictivo de madurez digital, diseñado para MYPEs Ind
 
 ## Tecnologías Principales
 
--   **Framework:** React
--   **Lenguaje:** TypeScript
--   **Build Tool:** Vite
--   **Gestor de Paquetes:** Bun
--   **Estilos:** Tailwind CSS
--   **Componentes:** Shadcn/ui
--   **Gestión de Estado de Servidor:** TanStack Query
--   **Routing:** React Router
+- **Framework:** React
+- **Lenguaje:** TypeScript
+- **Build Tool:** Vite
+- **Gestor de Paquetes:** Bun
+- **Estilos:** Tailwind CSS
+- **Componentes:** Shadcn/ui
+- **Gestión de Estado de Servidor:** TanStack Query
+- **Routing:** React Router
 
 ## Primeros Pasos
 
@@ -29,28 +29,27 @@ powershell -c "irm bun.sh/install.ps1|iex"
 
 # Para macOS / Linux
 curl -fsSL https://bun.sh/install | bash
-
 ```
 
 ## Instalación
 
 ### 1. Clona el repositorio
-```Bash
+```bash
 git clone https://github.com/ifpareja28/DigiPath.git
 ```
 
 ### 2. Navega al directorio del proyecto
-```Bash
+```bash
 cd DigiPath
 ```
 
 ### 3. Instala las dependencias
-```Bash
+```bash
 bun install
 ```
 
 ### 4. Inicia el servidor de desarrollo
-```Bash
+```bash
 bun run dev
 ```
 
@@ -58,10 +57,10 @@ La aplicación estará disponible en http://localhost:8080.
 
 ## Scripts disponibles
 
-```Bash
-# bun run dev   : inicia el servidor de desarrollo.
-# bun run build : compila la aplicación para producción.
-# bun run lint  : ejecuta el linter para analizar el código.
+```bash
+# bun run dev    : inicia el servidor de desarrollo.
+# bun run build  : compila la aplicación para producción.
+# bun run lint   : ejecuta el linter para analizar el código.
 # bun run preview: previsualiza el build de producción.
 ```
 
