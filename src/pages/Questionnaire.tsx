@@ -1,180 +1,205 @@
-import { useEffect, useState } from 'react';
+// src/pages/Questionnaire.tsx
+
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Check, Loader2 } from 'lucide-react';
-import { Button } from '../components/ui/button';
-import { ProgressBar } from '../components/ProgressBar';
-import { QuestionCard } from '../components/QuestionCard';
-import { AnswerOptions } from '../components/AnswerOptions';
-import { useQuestionnaireContext } from '../contexts/QuestionnaireContext';
-import { toast } from '../components/ui/use-toast';
-import {apiService} from '../services/api';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import * as diagnosisService from '@/services/diagnosisService';
+import { Button } from '@/components/ui/button';
+import { AnswerPayload } from '@/types';
+import { useToast } from '@/hooks/use-toast';
+
+// --- COMPONENTES INTERNOS ---
+const QuestionCard = ({ questionText, children }: { questionText: string, children: React.ReactNode }) => (
+  <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-2xl">
+    <p className="text-xl font-semibold text-gray-800">{questionText}</p>
+    <div className="mt-6 space-y-4">{children}</div>
+  </div>
+);
+
+const ProgressBar = ({ current, total }: { current: number, total: number }) => {
+  const percentage = total > 0 ? (current / total) * 100 : 0;
+  return (
+    <div className="w-full bg-gray-200 rounded-full h-2.5 mb-4">
+      <div className="bg-primary h-2.5 rounded-full" style={{ width: `${percentage}%` }}></div>
+    </div>
+  );
+};
 
 const Questionnaire = () => {
   const navigate = useNavigate();
-  const {
-    questions,
-    answers,
-    currentQuestionIndex,
-    startQuestionnaire,
-    answerQuestion,
-    nextQuestion,
-    previousQuestion,
-    isCompleted,
-  } = useQuestionnaireContext();
+  const { toast } = useToast();
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [answers, setAnswers] = useState<AnswerPayload[]>([]);
 
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { data: questions, isLoading, isError } = useQuery({
+    queryKey: ['questions'],
+    queryFn: diagnosisService.getQuestions,
+  });
 
-  useEffect(() => {
-    // Si las preguntas ya están cargadas, no vuelvas a cargar
-    if (questions.length === 0) {
-      const loadQuestions = async () => {
-        try {
-          // const data = await apiService.getQuestions();
-          // startQuestionnaire(data);
-          // Simulación de preguntas
-          const data = await apiService.getQuestions();
-          startQuestionnaire(data);
-        } catch (error) {
-          toast({
-            title: 'Error',
-            description: 'No se pudieron cargar las preguntas.',
-            variant: 'destructive',
-          });
-          navigate('/');
-        }
-      };
-      loadQuestions();
+  const { mutate: submit, isPending: isSubmitting } = useMutation({
+    mutationFn: diagnosisService.submitDiagnosis,
+    onSuccess: (data) => {
+      toast({ title: "Diagnóstico enviado con éxito." });
+      navigate(`/results/${data.id_diagnostico}`);
+    },
+    onError: (error) => {
+      console.error("Error al enviar el diagnóstico:", error);
+      toast({
+        title: "Error",
+        description: "No se pudo enviar el diagnóstico. Por favor, inténtelo de nuevo.",
+        variant: "destructive",
+      });
     }
-  }, [questions.length, startQuestionnaire, navigate, toast]);
+  });
+
+  const handleAnswer = (questionId: number, value: string | number) => {
+    const newAnswers = [...answers.filter(a => a.id_pregunta !== questionId), { id_pregunta: questionId, valor_respuesta_cruda: value }];
+    setAnswers(newAnswers);
+
+    if (currentQuestionIndex < (questions?.length || 0) - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+    }
+  };
+
+  const handlePrevious = () => {
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex(currentQuestionIndex - 1);
+    }
+  };
+  
+  const handleSubmit = () => {
+    if (answers.length === questions?.length) {
+        submit(answers);
+    } else {
+        toast({
+            title: "Cuestionario incompleto",
+            description: `Por favor, responda las ${questions?.length || 20} preguntas.`,
+            variant: "destructive"
+        });
+    }
+  };
+  
+  if (isLoading) return <div className="min-h-screen flex items-center justify-center">Cargando cuestionario...</div>;
+  if (isError || !questions || questions.length === 0) return <div className="min-h-screen flex items-center justify-center text-red-500">Error al cargar las preguntas.</div>;
 
   const currentQuestion = questions[currentQuestionIndex];
-  const currentAnswer = answers.find(a => a.id_pregunta === currentQuestion?.id_pregunta);
+  const totalQuestions = questions.length;
+  const isLastQuestion = currentQuestionIndex === totalQuestions - 1;
 
-  const handleSelect = (value: number) => {
-    if (currentQuestion) {
-      answerQuestion(currentQuestion.id_pregunta, value);
+  const renderAnswerOptions = () => {
+    const { id_pregunta, tipo_pregunta, texto_pregunta } = currentQuestion;
+    
+    // Buscamos si ya hay una respuesta para esta pregunta
+    const selectedAnswer = answers.find(a => a.id_pregunta === id_pregunta)?.valor_respuesta_cruda;
+
+    // --- MANEJO DE DIFERENTES TIPOS DE PREGUNTA ---
+
+    // 1. Preguntas Binarias (Sí/No)
+    if (tipo_pregunta === 'Binaria') {
+        return (
+            <div className="flex flex-col sm:flex-row gap-4">
+                <Button 
+                    onClick={() => handleAnswer(id_pregunta, 'Si')}
+                    variant={selectedAnswer === 'Si' ? 'default' : 'outline'}
+                    className="w-full sm:w-auto"
+                >Sí</Button>
+                <Button 
+                    onClick={() => handleAnswer(id_pregunta, 'No')}
+                    variant={selectedAnswer === 'No' ? 'default' : 'outline'}
+                    className="w-full sm:w-auto"
+                >No</Button>
+            </div>
+        );
     }
-  };
-
-  const handleNext = () => {
-    if (!currentAnswer) {
-      toast({
-        title: 'Respuesta requerida',
-        description: 'Por favor seleccione una respuesta antes de continuar',
-        variant: 'destructive',
-      });
-      return;
-    }
-    nextQuestion();
-  };
-
-  const handleFinish = async () => {
-    if (!isCompleted) {
-      toast({
-        title: 'Diagnóstico incompleto',
-        description: 'Por favor responda todas las preguntas',
-        variant: 'destructive',
-      });
-      return;
+    
+    // 2. Preguntas de Escala Numérica (ej. Escala_1_7)
+    // Hacemos la lógica flexible para manejar cualquier escala (1-5, 1-7, etc.)
+    if (tipo_pregunta.startsWith('Escala_')) {
+        // Extraemos el número máximo de la escala (ej. 7 de "Escala_1_7")
+        const maxScale = parseInt(tipo_pregunta.split('_')[2] || '7', 10);
+        const scaleValues = Array.from({ length: maxScale }, (_, i) => i + 1);
+        
+        return (
+            <div className="flex flex-wrap gap-2">
+                {scaleValues.map(value => (
+                    <Button 
+                        key={value} 
+                        onClick={() => handleAnswer(id_pregunta, value)}
+                        variant={selectedAnswer === value ? 'default' : 'outline'}
+                        className="w-12 h-12"
+                    >{value}</Button>
+                ))}
+            </div>
+        );
     }
 
-    setIsSubmitting(true);
-
-    try {
-      // const { id_diagnostico } = await apiService.submitAnswers(answers);
-      // Simulación de resultado
-      const id_diagnostico = 123;
-      toast({
-        title: '¡Diagnóstico completado!',
-        description: 'Preparando sus resultados...',
-      });
-
-      navigate(`/results/${id_diagnostico}`);
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Hubo un problema al enviar sus respuestas. Por favor intente nuevamente.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsSubmitting(false);
+    // 3. Preguntas Categóricas
+    if (tipo_pregunta === 'Categorica') {
+        let options: { label: string; value: number }[] = [];
+        
+        // Aquí centralizamos la lógica para todas las preguntas categóricas
+        if (id_pregunta === 6) {
+            options = [
+                { label: 'Bajo: Casi todo es manual (cuadernos, memoria).', value: 1 },
+                { label: 'Básico: Usamos hojas de cálculo para tareas clave.', value: 2 },
+                { label: 'Intermedio: Usamos algún software específico para una parte.', value: 3 },
+                { label: 'Alto: Tenemos un sistema integrado que conecta varias áreas.', value: 4 },
+            ];
+        } else if (id_pregunta === 18) {
+            options = [
+                { label: 'No implementamos / No medimos', value: 1 },
+                { label: 'En menos de la mitad de los proyectos', value: 2 },
+                { label: 'En más de la mitad de los proyectos', value: 3 },
+            ];
+        } else if (id_pregunta === 8) { // Añadimos el caso para la pregunta 8
+             options = [
+                { label: '0 (Ninguna)', value: 0 },
+                { label: '1-2', value: 2 },
+                { label: '3-4', value: 4 },
+                { label: '5-6', value: 6 },
+                { label: '7 (Todas)', value: 7 },
+             ];
+        }
+        
+        return (
+            <div className="space-y-3">
+                {options.map(opt => (
+                    <Button
+                        key={opt.value}
+                        onClick={() => handleAnswer(id_pregunta, opt.value)}
+                        variant={selectedAnswer === opt.value ? 'default' : 'outline'}
+                        className="w-full justify-start text-left h-auto py-3 whitespace-normal"
+                    >{opt.label}</Button>
+                ))}
+            </div>
+        );
     }
-  };
-
-  if (!currentQuestion) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5">
-        Cargando...
-      </div>
-    );
-  }
-
-  const isLastQuestion = currentQuestionIndex === questions.length - 1;
+    
+    // --- Fallback ---
+    // Si el tipo de pregunta en la BD no coincide con ninguno de los casos anteriores
+    return <p className="text-red-500">Error: Tipo de pregunta "{tipo_pregunta}" no soportado.</p>;
+};
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 py-8">
-      <div className="container mx-auto px-4 max-w-4xl">
-        <div className="mb-8">
-          <ProgressBar current={currentQuestionIndex} total={questions.length} />
-        </div>
-        <div className="mb-8">
-          <QuestionCard
-            question={currentQuestion.texto_pregunta}
-            domain={currentQuestion.dominio}
-            questionNumber={currentQuestionIndex + 1}
-          />
-        </div>
-        <div className="mb-8">
-          <AnswerOptions
-            selectedValue={currentAnswer?.valor_respuesta ?? null}
-            onSelect={handleSelect}
-          />
-        </div>
-        <div className="flex justify-between items-center gap-4">
-          <Button
-            variant="outline"
-            size="lg"
-            onClick={previousQuestion}
-            disabled={currentQuestionIndex === 0 || isSubmitting}
-          >
-            <ChevronLeft className="mr-2 h-4 w-4" />
-            Anterior
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
+      <div className="w-full max-w-2xl">
+        <ProgressBar current={currentQuestionIndex + 1} total={totalQuestions} />
+        <p className='text-sm text-gray-500 mb-2'>Pregunta {currentQuestionIndex + 1} de {totalQuestions}</p>
+      </div>
+      <QuestionCard questionText={currentQuestion.texto_pregunta}>
+        {renderAnswerOptions()}
+      </QuestionCard>
+      <div className="flex justify-between w-full max-w-2xl mt-8">
+        <Button onClick={handlePrevious} disabled={currentQuestionIndex === 0}>
+          Anterior
+        </Button>
+        {isLastQuestion ? (
+          <Button onClick={handleSubmit} disabled={isSubmitting} className="bg-green-500 hover:bg-green-600">
+            {isSubmitting ? 'Finalizando...' : 'Finalizar y Ver Resultados'}
           </Button>
-          <div className="text-sm text-muted-foreground">
-            {answers.length} de {questions.length} respondidas
-          </div>
-          {isLastQuestion ? (
-            <Button
-              variant="success"
-              size="lg"
-              onClick={handleFinish}
-              disabled={currentAnswer?.valor_respuesta == null || isSubmitting}
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Procesando...
-                </>
-              ) : (
-                <>
-                  <Check className="mr-2 h-4 w-4" />
-                  Finalizar y Ver Resultados
-                </>
-              )}
-            </Button>
-          ) : (
-            <Button
-              variant="default"
-              size="lg"
-              onClick={handleNext}
-              disabled={currentAnswer?.valor_respuesta == null || isSubmitting}
-            >
-              Siguiente
-              <ChevronRight className="ml-2 h-4 w-4" />
-            </Button>
-          )}
-        </div>
+        ) : (
+            <p className='text-sm text-gray-400'>Seleccione una opción para continuar</p>
+        )}
       </div>
     </div>
   );

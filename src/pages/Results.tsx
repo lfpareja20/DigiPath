@@ -1,257 +1,170 @@
-import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
+import { useParams, Link, useNavigate  } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import * as diagnosisService from '@/services/diagnosisService';
+import { Bar, Doughnut } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement,
+} from 'chart.js';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { RecommendationCard } from '@/components/RecommendationCard';
-import { useResultContext } from '@/contexts/ResultContext';
-import { apiService } from '@/services/api';
-import { 
-  Loader2, 
-  ArrowLeft, 
-  TrendingUp,
-  Target,
-  Lightbulb,
-  Award
-} from 'lucide-react';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
+import { FactorImpacto } from '@/types';
+
+// Registramos los componentes necesarios para Chart.js
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  ArcElement,
+  Title,
+  Tooltip,
+  Legend
+);
+
+// --- COMPONENTES INTERNOS PARA EL REPORTE ---
+
+// Componente para mostrar las tarjetas de drivers (Fortalezas y Debilidades)
+const ImpactFactorCard = ({ factor, type }: { factor: FactorImpacto, type: 'DEBILIDAD' | 'FORTALEZA' }) => {
+    const borderColorClass = type === 'DEBILIDAD' ? 'border-red-500' : 'border-green-500';
+    const textColorClass = type === 'DEBILIDAD' ? 'text-red-500' : 'text-green-500';
+
+    return (
+        <Card className={`border-l-4 ${borderColorClass}`}>
+            <CardHeader>
+                <div className="flex justify-between items-start">
+                    <CardTitle className={`text-lg ${textColorClass}`}>{factor.titulo}</CardTitle>
+                    <span className={`text-sm font-bold px-2 py-1 rounded-md bg-opacity-20 ${type === 'DEBILIDAD' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+                       {factor.peso_impacto.toFixed(0)}%
+                    </span>
+                </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                <div>
+                    <p className="font-semibold text-sm mb-1">¿Por qué es una {type === 'DEBILIDAD' ? 'oportunidad' : 'fortaleza'}?</p>
+                    <p className="text-gray-600">{factor.porque}</p>
+                </div>
+                {factor.accion && (
+                    <div>
+                        <p className="font-semibold text-sm mb-1">Recomendación:</p>
+                        <p className="text-gray-600">{factor.accion}</p>
+                    </div>
+                )}
+            </CardContent>
+        </Card>
+    );
+};
 
 const Results = () => {
   const { diagnosisId } = useParams<{ diagnosisId: string }>();
   const navigate = useNavigate();
-  const { result, setResult, isLoading, setIsLoading } = useResultContext();
-  const [error, setError] = useState(false);
 
-  useEffect(() => {
-    const loadResults = async () => {
-      if (!diagnosisId) {
-        navigate('/dashboard');
-        return;
-      }
+  const { data: report, isLoading, isError } = useQuery({
+    queryKey: ['diagnosisReport', diagnosisId],
+    queryFn: () => diagnosisService.getDiagnosisReport(Number(diagnosisId)),
+    enabled: !!diagnosisId, // Solo ejecuta la consulta si diagnosisId existe
+  });
 
-      setIsLoading(true);
-      setError(false);
-
-      try {
-        const data = await apiService.getDiagnosisResult(parseInt(diagnosisId));
-        setResult(data);
-      } catch (err) {
-        console.error('Error loading results:', err);
-        setError(true);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadResults();
-  }, [diagnosisId, setResult, setIsLoading, navigate]);
-
+  // --- RENDERIZADO CONDICIONAL ---
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5">
-        <div className="text-center">
-          <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-muted-foreground">Generando sus resultados...</p>
-        </div>
+      <div className="max-w-4xl mx-auto p-8 space-y-6">
+        <Skeleton className="h-8 w-1/2" />
+        <Skeleton className="h-32 w-full" />
+        <Skeleton className="h-64 w-full" />
       </div>
     );
   }
 
-  if (error || !result) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-4">
-        <Card className="max-w-md">
-          <CardContent className="p-8 text-center">
-            <p className="text-muted-foreground mb-4">
-              No se pudieron cargar los resultados
-            </p>
-            <Button onClick={() => navigate('/dashboard')}>
-              Volver al Dashboard
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
+  if (isError || !report) {
+    return <div className="min-h-screen flex items-center justify-center text-red-500">Error al cargar el reporte.</div>;
   }
-
-  const getLevelColor = (level: string) => {
-    switch (level) {
-      case 'Maestro': return 'bg-accent text-accent-foreground';
-      case 'Seguidor': return 'bg-primary text-primary-foreground';
-      case 'Conservador': return 'bg-secondary text-secondary-foreground';
-      default: return 'bg-muted text-muted-foreground';
-    }
+  
+  // --- PREPARACIÓN DE DATOS PARA LOS GRÁFICOS ---
+  const domainChartData = {
+    labels: Object.keys(report.desglose_dominios),
+    datasets: [{
+      label: 'Puntaje por Dominio (escala 1-7)',
+      data: Object.values(report.desglose_dominios),
+      backgroundColor: 'rgba(54, 162, 235, 0.6)',
+      borderColor: 'rgba(54, 162, 235, 1)',
+      borderWidth: 1,
+    }],
   };
-
-  const getLevelDescription = (level: string) => {
-    switch (level) {
-      case 'Maestro':
-        return 'Su empresa lidera la transformación digital en su sector';
-      case 'Seguidor':
-        return 'Su empresa está adoptando activamente tecnologías digitales';
-      case 'Conservador':
-        return 'Su empresa está comenzando su camino hacia la digitalización';
-      default:
-        return 'Su empresa tiene grandes oportunidades de crecimiento digital';
-    }
-  };
-
+  
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 py-8">
-      <div className="container mx-auto px-4 max-w-6xl">
-        {/* Header */}
-        <div className="mb-8">
-          <Button 
-            variant="ghost" 
-            onClick={() => navigate('/dashboard')}
-            className="mb-4"
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Volver al Dashboard
-          </Button>
-          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
-            Resultados de su Diagnóstico
-          </h1>
-          <p className="text-muted-foreground">
-            {format(new Date(result.fecha_diagnostico), "d 'de' MMMM 'de' yyyy, HH:mm", { locale: es })}
-          </p>
-        </div>
+    <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
+        <Button variant="outline" asChild className="mb-4">
+            <Link to="/dashboard">
+                &larr; Volver al Dashboard
+            </Link>
+        </Button>
 
-        {/* Summary Cards */}
-        <div className="grid md:grid-cols-2 gap-6 mb-8">
-          <Card className="shadow-xl border-2">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Award className="h-5 w-5 text-primary" />
-                Nivel de Madurez Digital
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <div>
-                  <Badge className={`${getLevelColor(result.nivel_madurez_predicho)} text-lg px-4 py-2`}>
-                    {result.nivel_madurez_predicho}
-                  </Badge>
-                  <p className="text-sm text-muted-foreground mt-3">
-                    {getLevelDescription(result.nivel_madurez_predicho)}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        <div className="max-w-4xl mx-auto space-y-8">
+            
+            {/* Cabecera del Reporte */}
+            <header>
+                <h1 className="text-3xl font-bold text-gray-800">Resultados de su Diagnóstico</h1>
+                <p className="text-gray-500">Realizado el {new Date(report.fecha_diagnostico).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+            </header>
 
-          <Card className="shadow-xl border-2">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-accent" />
-                Potencial de Avance
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-4">
-                <div className="text-5xl font-bold text-accent">
-                  {result.probabilidad_exito}%
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  Probabilidad de avanzar al siguiente nivel implementando las recomendaciones
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Main Analysis Section */}
-        <Card className="shadow-xl mb-8">
-          <CardHeader className="bg-gradient-to-r from-primary/10 to-accent/10">
-            <div className="flex items-center gap-3">
-              <Target className="h-6 w-6 text-primary" />
-              <div>
-                <CardTitle className="text-2xl">Su Ruta de Éxito Personalizada</CardTitle>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Factores clave identificados mediante análisis de IA
-                </p>
-              </div>
+            {/* Resumen Ejecutivo */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Nivel de Madurez Digital</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-4xl font-bold text-primary">{report.nivel_madurez_predicho}</p>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Potencial de Avance</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-4xl font-bold text-green-500">{report.potencial_avance.toFixed(0)}%</p>
+                        <p className="text-sm text-gray-500">Probabilidad de avanzar al siguiente nivel.</p>
+                    </CardContent>
+                </Card>
             </div>
-          </CardHeader>
-          <CardContent className="pt-6">
-            <p className="text-muted-foreground mb-6">
-              Estos son los factores más importantes que definen su diagnóstico actual. 
-              Enfocarse en las áreas de mejora tendrá el mayor impacto en su progreso digital.
-            </p>
-          </CardContent>
-        </Card>
 
-        {/* Improvement Areas */}
-        <div className="mb-8">
-          <div className="flex items-center gap-2 mb-4">
-            <Lightbulb className="h-6 w-6 text-destructive" />
-            <h2 className="text-2xl font-bold text-foreground">
-              Áreas de Mejora Prioritarias
-            </h2>
-          </div>
-          <p className="text-muted-foreground mb-6">
-            Estos factores están limitando su avance. Mejorarlos generará el mayor retorno de inversión.
-          </p>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {result.drivers_principales.map((driver, index) => (
-              <RecommendationCard
-                key={index}
-                data={driver}
-                type="improvement"
-              />
-            ))}
-          </div>
-        </div>
+            {/* Gráfico de Desglose por Dominios */}
+            <Card>
+                <CardHeader>
+                    <CardTitle>Desglose de Rendimiento por Dominio</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <Bar data={domainChartData} options={{ scales: { y: { beginAtZero: true, max: 7 } } }} />
+                </CardContent>
+            </Card>
 
-        {/* Strengths */}
-        <div className="mb-8">
-          <div className="flex items-center gap-2 mb-4">
-            <Award className="h-6 w-6 text-accent" />
-            <h2 className="text-2xl font-bold text-foreground">
-              Fortalezas a Mantener
-            </h2>
-          </div>
-          <p className="text-muted-foreground mb-6">
-            Estas son sus ventajas competitivas. Manténgalas y profundícelas.
-          </p>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {result.fortalezas_principales.map((strength, index) => (
-              <RecommendationCard
-                key={index}
-                data={strength}
-                type="strength"
-              />
-            ))}
-          </div>
-        </div>
-
-        {/* Action Buttons */}
-        <Card className="shadow-lg">
-          <CardContent className="p-8 text-center">
-            <h3 className="text-xl font-bold mb-4">¿Qué sigue?</h3>
-            <p className="text-muted-foreground mb-6">
-              Realice un nuevo diagnóstico en 3 meses para medir su progreso
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button 
-                variant="default" 
-                size="lg"
-                onClick={() => navigate('/questionnaire')}
-              >
-                Realizar Nuevo Diagnóstico
-              </Button>
-              <Button 
-                variant="outline" 
-                size="lg"
-                onClick={() => navigate('/dashboard')}
-              >
-                Ver Historial
-              </Button>
+            {/* Áreas de Mejora Prioritarias (Debilidades) */}
+            <div>
+                <h2 className="text-2xl font-semibold mb-4">Áreas de Mejora Prioritarias</h2>
+                <div className="space-y-4">
+                    {report.areas_mejora_prioritarias.map(factor => (
+                        <ImpactFactorCard key={factor.pregunta_id} factor={factor} type="DEBILIDAD" />
+                    ))}
+                </div>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+
+            {/* Fortalezas a Mantener */}
+            <div>
+                <h2 className="text-2xl font-semibold mb-4">Fortalezas a Mantener</h2>
+                <div className="space-y-4">
+                    {report.fortalezas_a_mantener.map(factor => (
+                        <ImpactFactorCard key={factor.pregunta_id} factor={factor} type="FORTALEZA" />
+                    ))}
+                </div>
+            </div>
+        </div>
     </div>
   );
 };

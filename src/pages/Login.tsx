@@ -1,66 +1,55 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useMutation } from '@tanstack/react-query';
+import { useAuthContext } from '@/contexts/AuthContext';
+import * as authService from '@/services/authService';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useAuthContext } from '@/contexts/AuthContext';
-import { apiService } from '@/services/api';
-import { toast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 const Login = () => {
-  const navigate = useNavigate();
-  const { login } = useAuthContext();
-  const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const navigate = useNavigate();
+  const { login: loginContext } = useAuthContext();
+  const { toast } = useToast();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // useMutation para manejar la llamada a la API
+  const { mutate: loginUser, isPending } = useMutation({
+    mutationFn: authService.login,
+    onSuccess: (data) => {
+      // Si la API responde con éxito, usamos la función del contexto para guardar el estado
+      loginContext(data.access_token);
+      toast({
+        title: "Inicio de sesión exitoso",
+        description: "Bienvenido de vuelta.",
+      });
+      navigate('/dashboard'); // Redirigimos al panel principal
+    },
+    onError: (error) => {
+      // Si la API devuelve un error (ej. 401 Unauthorized), mostramos una notificación
+      console.error("Error de inicio de sesión:", error);
+      toast({
+        title: "Error de inicio de sesión",
+        description: "Correo electrónico o contraseña incorrectos. Por favor, inténtelo de nuevo.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!email || !password) {
-      toast({
-        title: 'Error',
-        description: 'Por favor complete todos los campos',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    setIsLoading(true);
-    
-    try {
-      const { token, user } = await apiService.login(email, password);
-      login(token, user);
-      
-      toast({
-        title: '¡Bienvenido!',
-        description: `Hola ${user.nombre_empresa}`,
-      });
-      
-      navigate('/dashboard');
-    } catch (error) {
-      toast({
-        title: 'Error de autenticación',
-        description: 'Credenciales incorrectas. Por favor intente nuevamente.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    // Llamamos a la mutación con las credenciales
+    loginUser({ username: email, password });
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-4">
-      <Card className="w-full max-w-md shadow-xl">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">
-            Iniciar Sesión
-          </CardTitle>
-          <CardDescription className="text-center">
-            Acceda a su panel de diagnóstico digital
-          </CardDescription>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle className="text-2xl">Iniciar Sesión</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -72,53 +61,28 @@ const Login = () => {
                 placeholder="empresa@ejemplo.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                disabled={isLoading}
                 required
               />
             </div>
-            
             <div className="space-y-2">
               <Label htmlFor="password">Contraseña</Label>
               <Input
                 id="password"
                 type="password"
-                placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                disabled={isLoading}
                 required
               />
             </div>
-
-            <Button 
-              type="submit" 
-              className="w-full" 
-              size="lg"
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Iniciando sesión...
-                </>
-              ) : (
-                'Iniciar Sesión'
-              )}
+            <Button type="submit" className="w-full" disabled={isPending}>
+              {isPending ? 'Iniciando sesión...' : 'Iniciar Sesión'}
             </Button>
           </form>
-
-          <div className="mt-6 text-center space-y-2">
-            <p className="text-sm text-muted-foreground">
-              ¿No tiene una cuenta?{' '}
-              <Link to="/register" className="text-primary hover:underline font-medium">
-                Regístrese gratis
-              </Link>
-            </p>
-            <p className="text-sm text-muted-foreground">
-              <Link to="/" className="text-primary hover:underline font-medium">
-                ← Volver al inicio
-              </Link>
-            </p>
+          <div className="mt-4 text-center text-sm">
+            ¿No tiene una cuenta?{' '}
+            <Link to="/register" className="underline">
+              Regístrese gratis
+            </Link>
           </div>
         </CardContent>
       </Card>

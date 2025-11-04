@@ -1,196 +1,101 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useMutation } from '@tanstack/react-query';
+import * as authService from '@/services/authService';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { apiService } from '@/services/api';
-import { toast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 const Register = () => {
+  const [nombreEmpresa, setNombreEmpresa] = useState('');
+  const [ruc, setRuc] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    nombre_empresa: '',
-    ruc: '',
-    email: '',
-    password: '',
-    confirmPassword: ''
-  });
+  const { toast } = useToast();
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({
-      ...prev,
-      [e.target.id]: e.target.value
-    }));
-  };
+  const { mutate: registerUser, isPending } = useMutation({
+        mutationFn: authService.register,
+        onSuccess: () => {
+          toast({
+            title: "¡Registro exitoso!",
+            description: "Tu cuenta ha sido creada. Ahora puedes iniciar sesión.",
+          });
+          navigate('/login');
+        },
+        onError: (error: any) => {
+          console.error("Error de registro:", error.response?.data);
+          
+          // Lógica mejorada para manejar diferentes tipos de errores
+          let errorMessage = "Ocurrió un error inesperado. Por favor, inténtelo de nuevo.";
+          
+          const errorDetail = error.response?.data?.detail;
 
-  const handleSubmit = async (e: React.FormEvent) => {
+          if (typeof errorDetail === 'string') {
+            // Caso 1: El error es un texto simple (ej. "El usuario ya existe")
+            errorMessage = errorDetail;
+          } else if (Array.isArray(errorDetail)) {
+            // Caso 2: El error es un array de validación de Pydantic
+            // Tomamos el mensaje del PRIMER error del array.
+            const firstError = errorDetail[0];
+            if (firstError && firstError.msg) {
+              errorMessage = firstError.msg;
+            }
+          }
+
+          toast({
+            title: "Error de registro",
+            description: errorMessage, // Ahora errorMessage es siempre un texto
+            variant: "destructive",
+          });
+        },
+    });
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!formData.nombre_empresa || !formData.ruc || !formData.email || !formData.password) {
-      toast({
-        title: 'Error',
-        description: 'Por favor complete todos los campos',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      toast({
-        title: 'Error',
-        description: 'Las contraseñas no coinciden',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    if (formData.ruc.length !== 11) {
-      toast({
-        title: 'Error',
-        description: 'El RUC debe tener 11 dígitos',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    setIsLoading(true);
-    
-    try {
-      await apiService.register(
-        formData.nombre_empresa,
-        formData.ruc,
-        formData.email,
-        formData.password
-      );
-      
-      toast({
-        title: '¡Registro exitoso!',
-        description: 'Su cuenta ha sido creada. Por favor inicie sesión.',
-      });
-      
-      navigate('/login');
-    } catch (error) {
-      toast({
-        title: 'Error en el registro',
-        description: 'Hubo un problema al crear su cuenta. Por favor intente nuevamente.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    registerUser({
+      nombre_empresa: nombreEmpresa,
+      ruc: ruc,
+      correo_electronico: email,
+      contrasena: password,
+    });
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-4">
-      <Card className="w-full max-w-md shadow-xl">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">
-            Crear Cuenta
-          </CardTitle>
-          <CardDescription className="text-center">
-            Regístrese para acceder al diagnóstico de madurez digital
-          </CardDescription>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle className="text-2xl">Crear Cuenta</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="nombre_empresa">Nombre de la Empresa</Label>
-              <Input
-                id="nombre_empresa"
-                type="text"
-                placeholder="Mi Empresa SAC"
-                value={formData.nombre_empresa}
-                onChange={handleChange}
-                disabled={isLoading}
-                required
-              />
+              <Input id="nombre_empresa" value={nombreEmpresa} onChange={(e) => setNombreEmpresa(e.target.value)} required />
             </div>
-
             <div className="space-y-2">
               <Label htmlFor="ruc">RUC</Label>
-              <Input
-                id="ruc"
-                type="text"
-                placeholder="20123456789"
-                maxLength={11}
-                value={formData.ruc}
-                onChange={handleChange}
-                disabled={isLoading}
-                required
-              />
+              <Input id="ruc" value={ruc} onChange={(e) => setRuc(e.target.value)} required />
             </div>
-            
             <div className="space-y-2">
               <Label htmlFor="email">Correo electrónico</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="contacto@miempresa.com"
-                value={formData.email}
-                onChange={handleChange}
-                disabled={isLoading}
-                required
-              />
+              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
             </div>
-            
             <div className="space-y-2">
               <Label htmlFor="password">Contraseña</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={formData.password}
-                onChange={handleChange}
-                disabled={isLoading}
-                required
-              />
+              <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirmar Contraseña</Label>
-              <Input
-                id="confirmPassword"
-                type="password"
-                placeholder="••••••••"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                disabled={isLoading}
-                required
-              />
-            </div>
-
-            <Button 
-              type="submit" 
-              className="w-full" 
-              size="lg"
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Creando cuenta...
-                </>
-              ) : (
-                'Crear Cuenta'
-              )}
+            <Button type="submit" className="w-full" disabled={isPending}>
+              {isPending ? 'Creando cuenta...' : 'Crear Cuenta'}
             </Button>
           </form>
-
-          <div className="mt-6 text-center space-y-2">
-            <p className="text-sm text-muted-foreground">
-              ¿Ya tiene una cuenta?{' '}
-              <Link to="/login" className="text-primary hover:underline font-medium">
-                Inicie sesión
-              </Link>
-            </p>
-            <p className="text-sm text-muted-foreground">
-              <Link to="/" className="text-primary hover:underline font-medium">
-                ← Volver al inicio
-              </Link>
-            </p>
+          <div className="mt-4 text-center text-sm">
+            ¿Ya tiene una cuenta?{' '}
+            <Link to="/login" className="underline">
+              Iniciar sesión
+            </Link>
           </div>
         </CardContent>
       </Card>

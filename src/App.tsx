@@ -48,30 +48,30 @@ const App = () => (
                 <Route path="/" element={<Landing />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
-                <Route 
+                { <Route 
                   path="/dashboard" 
                   element={
                     <ProtectedRoute>
                       <Dashboard />
                     </ProtectedRoute>
                   } 
-                />
-                <Route 
+                /> }
+                { <Route 
                   path="/questionnaire" 
                   element={
                     <ProtectedRoute>
                       <Questionnaire />
                     </ProtectedRoute>
                   } 
-                />
-                <Route 
+                /> }
+                { <Route 
                   path="/results/:diagnosisId" 
                   element={
                     <ProtectedRoute>
                       <Results />
                     </ProtectedRoute>
                   } 
-                />
+                /> }
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>
