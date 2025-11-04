@@ -1,17 +1,17 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useMutation } from '@tanstack/react-query';
-import { useAuthContext } from '@/contexts/AuthContext';
-import * as authService from '@/services/authService';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
+import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { useMutation } from "@tanstack/react-query";
+import { useAuthContext } from "@/contexts/AuthContext";
+import * as authService from "@/services/authService";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
 
 const Login = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const navigate = useNavigate();
   const { login: loginContext } = useAuthContext();
   const { toast } = useToast();
@@ -20,20 +20,21 @@ const Login = () => {
   const { mutate: loginUser, isPending } = useMutation({
     mutationFn: authService.login,
     onSuccess: (data) => {
-      // Si la API responde con éxito, usamos la función del contexto para guardar el estado
-      loginContext(data.access_token);
       toast({
         title: "Inicio de sesión exitoso",
         description: "Bienvenido de vuelta.",
+        duration: 2500,
       });
-      navigate('/dashboard'); // Redirigimos al panel principal
+      // Simplemente pasamos el token al contexto. El contexto se encarga del resto.
+      loginContext(data.access_token);
     },
     onError: (error) => {
       // Si la API devuelve un error (ej. 401 Unauthorized), mostramos una notificación
       console.error("Error de inicio de sesión:", error);
       toast({
         title: "Error de inicio de sesión",
-        description: "Correo electrónico o contraseña incorrectos. Por favor, inténtelo de nuevo.",
+        description:
+          "Correo electrónico o contraseña incorrectos. Por favor, inténtelo de nuevo.",
         variant: "destructive",
       });
     },
@@ -75,15 +76,20 @@ const Login = () => {
               />
             </div>
             <Button type="submit" className="w-full" disabled={isPending}>
-              {isPending ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+              {isPending ? "Iniciando sesión..." : "Iniciar Sesión"}
             </Button>
           </form>
           <div className="mt-4 text-center text-sm">
-            ¿No tiene una cuenta?{' '}
+            ¿No tiene una cuenta?{" "}
             <Link to="/register" className="underline">
               Regístrese gratis
             </Link>
           </div>
+          <div>
+              <Link to="/forgot-password" className="text-xs text-gray-500 hover:underline">
+                ¿Olvidó su contraseña?
+              </Link>
+            </div>
         </CardContent>
       </Card>
     </div>

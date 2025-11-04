@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import { Checkbox } from '@/components/ui/checkbox';
 
 const Register = () => {
   const [nombreEmpresa, setNombreEmpresa] = useState('');
@@ -15,13 +16,14 @@ const Register = () => {
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
   const { toast } = useToast();
-
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
   const { mutate: registerUser, isPending } = useMutation({
         mutationFn: authService.register,
         onSuccess: () => {
           toast({
             title: "¡Registro exitoso!",
             description: "Tu cuenta ha sido creada. Ahora puedes iniciar sesión.",
+            duration: 2500,
           });
           navigate('/login');
         },
@@ -55,12 +57,22 @@ const Register = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!agreedToTerms) {
+      toast({
+        title: 'Términos y Condiciones',
+        description: 'Debe aceptar los términos y condiciones para continuar.',
+        variant: 'destructive',
+      });
+      return; // Detiene el envío del formulario
+    }
     registerUser({
       nombre_empresa: nombreEmpresa,
       ruc: ruc,
       correo_electronico: email,
       contrasena: password,
+      acepta_terminos: agreedToTerms,
     });
+    
   };
 
   return (
@@ -86,6 +98,25 @@ const Register = () => {
             <div className="space-y-2">
               <Label htmlFor="password">Contraseña</Label>
               <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+            </div>
+            <div className="flex items-center space-x-2 pt-2">
+              <Checkbox
+                id="terms"
+                checked={agreedToTerms}
+                onCheckedChange={(checked) => setAgreedToTerms(checked as boolean)}
+                disabled={isPending}
+              />
+              <Label htmlFor="terms" className="text-sm font-light text-muted-foreground">
+                He leído y acepto los{' '}
+                <Link
+                  to="/terms-and-conditions"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline hover:text-primary font-medium"
+                >
+                  Términos y Condiciones
+                </Link>
+              </Label>
             </div>
             <Button type="submit" className="w-full" disabled={isPending}>
               {isPending ? 'Creando cuenta...' : 'Crear Cuenta'}

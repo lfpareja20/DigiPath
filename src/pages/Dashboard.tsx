@@ -27,13 +27,18 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
       <div className="max-w-4xl mx-auto">
-        
-        {/* Cabecera con el nombre de la empresa y botón de logout */}
+
         <header className="flex justify-between items-center mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
             Bienvenido, {user?.nombre_empresa || 'Empresa'}
           </h1>
-          <Button onClick={logout} variant="outline">Cerrar Sesión</Button>
+          {/* Contenedor para los botones */}
+          <div className="flex gap-2">
+            <Button variant="secondary" asChild>
+              <Link to="/profile">Editar Perfil</Link>
+            </Button>
+            <Button onClick={logout} variant="outline">Cerrar Sesión</Button>
+          </div>
         </header>
 
         {/* Tarjeta de acción principal */}

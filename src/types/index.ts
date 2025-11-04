@@ -55,3 +55,8 @@ export interface Question {
   subdominio: string;
   tipo_pregunta: string;
 }
+
+export interface UserUpdatePayload {
+  nombre_empresa?: string;
+  ruc?: string;
+}

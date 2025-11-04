@@ -1,3 +1,5 @@
+// src/App.tsx (VERSIÓN CORREGIDA Y REORDENADA)
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -12,11 +14,14 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Questionnaire from "./pages/Questionnaire";
 import Results from "./pages/Results";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 const queryClient = new QueryClient();
 
-// Protected Route wrapper
+// El componente ProtectedRoute no necesita cambios.
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, isLoading } = useAuthContext();
 
@@ -37,48 +42,43 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <QuestionnaireProvider>
-        <ResultProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
+    {/* 1. BrowserRouter AHORA ENVUELVE A TODO LO DEMÁS */}
+    <BrowserRouter>
+      <AuthProvider>
+        <QuestionnaireProvider>
+          <ResultProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
               <Routes>
                 <Route path="/" element={<Landing />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
-                { <Route 
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
+                <Route 
                   path="/dashboard" 
-                  element={
-                    <ProtectedRoute>
-                      <Dashboard />
-                    </ProtectedRoute>
-                  } 
-                /> }
-                { <Route 
+                  element={ <ProtectedRoute> <Dashboard /> </ProtectedRoute> } 
+                />
+                <Route 
                   path="/questionnaire" 
-                  element={
-                    <ProtectedRoute>
-                      <Questionnaire />
-                    </ProtectedRoute>
-                  } 
-                /> }
-                { <Route 
+                  element={ <ProtectedRoute> <Questionnaire /> </ProtectedRoute> } 
+                />
+                <Route 
                   path="/results/:diagnosisId" 
-                  element={
-                    <ProtectedRoute>
-                      <Results />
-                    </ProtectedRoute>
-                  } 
-                /> }
+                  element={ <ProtectedRoute> <Results /> </ProtectedRoute> } 
+                />
+                <Route 
+                  path="/profile"
+                  element={ <ProtectedRoute> <Profile /> </ProtectedRoute> }
+                />
                 <Route path="*" element={<NotFound />} />
               </Routes>
-            </BrowserRouter>
-          </TooltipProvider>
-        </ResultProvider>
-      </QuestionnaireProvider>
-    </AuthProvider>
+            </TooltipProvider>
+          </ResultProvider>
+        </QuestionnaireProvider>
+      </AuthProvider>
+    </BrowserRouter>
   </QueryClientProvider>
 );
 
