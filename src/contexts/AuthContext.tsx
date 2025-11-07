@@ -7,44 +7,44 @@ import * as authService from '@/services/authService';
 interface IAuthContext {
   isAuthenticated: boolean;
   user: User | null;
-  isLoading: boolean;
-  login: (token: string) => void;
+  isLoading: boolean; // Renombrado de 'isAuthLoading' para consistencia
+  login: (token: string) => Promise<void>;
   logout: () => void;
 }
 
 const AuthContext = createContext<IAuthContext | undefined>(undefined);
 
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
+export function AuthProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-
-  // Obtenemos el token directamente. Es síncrono.
   const token = localStorage.getItem('authToken');
 
-  // Usamos useQuery para obtener y gestionar el estado del usuario.
-  // TanStack Query se encargará de volver a llamar a esta función cuando se lo pidamos.
-  const { data: user, isLoading, isError } = useQuery({
-    queryKey: ['currentUser'], // <--- Esta es la clave que invalidaremos
+  const { data: user, isLoading, isError, isSuccess } = useQuery({
+    queryKey: ['currentUser'],
     queryFn: authService.getCurrentUser,
-    enabled: !!token, // Solo ejecuta esta consulta SI hay un token.
-    retry: 1, // Intentar solo una vez si falla
+    enabled: !!token,
+    retry: 1,
+    // No queremos que vuelva a intentar indefinidamente si el token es malo
+    staleTime: Infinity, // No consideres los datos "viejos" hasta que se invaliden
+    gcTime: Infinity,    // No limpies los datos de la caché
   });
 
-  // El usuario está autenticado si no hay error y tenemos datos de usuario.
-  const isAuthenticated = !isError && !!user;
+  const isAuthenticated = !!user && isSuccess && !isError;
 
-  const login = (newToken: string) => {
+  const login = async (newToken: string) => {
     localStorage.setItem('authToken', newToken);
-    // En lugar de llamar a la API aquí, le decimos a TanStack Query que la consulta 'currentUser'
-    // está "sucia" y debe volver a ejecutarse.
-    queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+    // Invalidamos y le damos la oportunidad de que la nueva query se complete
+    // antes de navegar.
+    await queryClient.invalidateQueries({ queryKey: ['currentUser'] });
     navigate('/dashboard');
   };
 
   const logout = () => {
     localStorage.removeItem('authToken');
-    // Limpiamos la caché de TanStack Query para el usuario.
+    // Forzamos la limpieza de la caché del usuario al hacer logout
     queryClient.setQueryData(['currentUser'], null);
+    // invalidamos para asegurar que cualquier componente se re-renderice
+    queryClient.invalidateQueries({ queryKey: ['currentUser'] }); 
     navigate('/login');
   };
   
@@ -57,12 +57,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-};
+}
 
-export const useAuthContext = () => {
+export function useAuthContext() {
   const context = useContext(AuthContext);
   if (context === undefined) {
     throw new Error('useAuthContext debe ser usado dentro de un AuthProvider');
   }
   return context;
-};
+}

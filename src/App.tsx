@@ -1,5 +1,3 @@
-// src/App.tsx (VERSIÓN CORREGIDA Y REORDENADA)
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -21,10 +19,12 @@ import ResetPassword from "./pages/ResetPassword";
 
 const queryClient = new QueryClient();
 
-// El componente ProtectedRoute no necesita cambios.
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, isLoading } = useAuthContext();
 
+  // isLoading se refiere a la carga INICIAL de la autenticación.
+  // Si estamos en esa carga inicial, mostramos un spinner.
+  // Esto evita que se redirija al login antes de tiempo al refrescar la página.
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -33,10 +33,12 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
+  // Si ya terminó la carga Y el usuario NO está autenticado, entonces redirigimos.
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 
+  // Si ya terminó la carga Y el usuario SÍ está autenticado, mostramos el contenido.
   return <>{children}</>;
 };
 

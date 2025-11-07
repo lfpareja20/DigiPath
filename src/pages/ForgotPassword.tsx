@@ -18,7 +18,7 @@ const ForgotPassword = () => {
       toast({
         title: "Solicitud enviada",
         description: "Si el correo está registrado, recibirás un enlace para restablecer tu contraseña.",
-        duration: 5000, // <--- MEJORA UX: El toast se cierra solo
+        duration: 5000,
       });
     },
     onError: (error) => {

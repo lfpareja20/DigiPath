@@ -1,4 +1,3 @@
-// Este servicio maneja todo lo relacionado con autenticación y usuarios.
 import apiClient from '@/lib/axios';
 import { User, AuthResponse, UserUpdatePayload } from '@/types';
 

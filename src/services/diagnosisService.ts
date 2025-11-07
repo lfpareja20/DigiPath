@@ -1,5 +1,3 @@
-// Este servicio se encarga de todo lo relacionado con diagnósticos.
-
 import apiClient from '@/lib/axios';
 import { Question, AnswerPayload, Diagnosis, DiagnosisReport } from '@/types';
 

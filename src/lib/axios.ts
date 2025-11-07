@@ -1,5 +1,3 @@
-// src/lib/axios.ts
-
 import axios from 'axios';
 
 // 1. Obtenemos la URL base de nuestras variables de entorno

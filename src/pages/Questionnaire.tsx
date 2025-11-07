@@ -1,5 +1,3 @@
-// src/pages/Questionnaire.tsx
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
