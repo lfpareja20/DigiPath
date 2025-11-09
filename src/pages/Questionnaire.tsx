@@ -1,3 +1,8 @@
+/**
+ * Página del cuestionario de diagnóstico
+ * Gestiona la presentación y respuesta de preguntas para evaluar
+ * el nivel de madurez digital de una empresa
+ */
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -6,7 +11,10 @@ import { Button } from "@/components/ui/button";
 import { AnswerPayload } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 
-// --- COMPONENTES INTERNOS ---
+/**
+ * Componente que muestra una pregunta individual del cuestionario
+ * Incluye el dominio, subdominio y el texto de la pregunta
+ */
 const QuestionCard = ({
   domain,
   subdomain,
@@ -30,6 +38,10 @@ const QuestionCard = ({
   </div>
 );
 
+/**
+ * Componente que muestra el progreso del cuestionario
+ * Visualiza el avance mediante una barra de progreso
+ */
 const ProgressBar = ({
   current,
   total,

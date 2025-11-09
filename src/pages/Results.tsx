@@ -1,3 +1,8 @@
+/**
+ * Página de resultados del diagnóstico
+ * Muestra el análisis detallado del nivel de madurez digital
+ * Incluye visualizaciones, fortalezas, debilidades y recomendaciones
+ */
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import * as diagnosisService from "@/services/diagnosisService";
@@ -39,9 +44,11 @@ ChartJS.register(
   Legend
 );
 
-// --- COMPONENTES INTERNOS PARA EL REPORTE ---
-
-// Componente para mostrar las tarjetas de drivers (Fortalezas y Debilidades)
+/**
+ * Componente que muestra una tarjeta de factor de impacto
+ * Visualiza las fortalezas y debilidades identificadas en el diagnóstico
+ * Incluye información sobre el impacto y recomendaciones de mejora
+ */
 const ImpactFactorCard = ({ factor, type }: { factor: FactorImpacto, type: 'DEBILIDAD' | 'FORTALEZA' }) => {
     const isDebilidad = type === 'DEBILIDAD';
     const accentColor = isDebilidad ? 'text-destructive' : 'text-success';
@@ -73,7 +80,6 @@ const ImpactFactorCard = ({ factor, type }: { factor: FactorImpacto, type: 'DEBI
         return (
             <Dialog>
                 <DialogTrigger asChild>
-                    {/* El contenido visible de la tarjeta es el trigger del pop-up */}
                     <div><CardContentLayout /></div>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[425px]">

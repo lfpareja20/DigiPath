@@ -1,3 +1,8 @@
+/**
+ * Página de perfil de empresa
+ * Permite a los usuarios ver y actualizar la información de su empresa
+ * Gestiona la actualización de datos como nombre y RUC
+ */
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -18,7 +23,9 @@ const Profile = () => {
   const [nombreEmpresa, setNombreEmpresa] = useState('');
   const [ruc, setRuc] = useState('');
 
-  // Cuando el componente carga, llenamos el formulario con los datos del usuario del contexto
+  /**
+   * Inicializa el formulario con los datos actuales del usuario
+   */
   useEffect(() => {
     if (user) {
       setNombreEmpresa(user.nombre_empresa);
@@ -26,8 +33,11 @@ const Profile = () => {
     }
   }, [user]);
 
+  /**
+   * Gestiona la actualización de datos del usuario
+   */
   const { mutate: updateUser, isPending } = useMutation({
-    mutationFn: authService.updateCurrentUser, // Llamaremos a una nueva función de servicio
+    mutationFn: authService.updateCurrentUser,
     onSuccess: (updatedUser) => {
       toast({
         title: "Perfil actualizado",
@@ -54,7 +64,7 @@ const Profile = () => {
   };
 
   if (!user) {
-    return <div>Cargando...</div>; // O un skeleton
+    return <div>Cargando...</div>;
   }
 
   return (

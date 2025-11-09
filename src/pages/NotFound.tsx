@@ -1,3 +1,8 @@
+/**
+ * Página de error 404 (Not Found)
+ * Se muestra cuando el usuario intenta acceder a una ruta inexistente
+ * Registra el intento de acceso para propósitos de monitoreo
+ */
 import { useLocation } from "react-router-dom";
 import { useEffect } from "react";
 

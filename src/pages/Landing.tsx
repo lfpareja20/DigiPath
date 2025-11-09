@@ -1,3 +1,8 @@
+/**
+ * Página de inicio (Landing Page)
+ * Presenta la herramienta de diagnóstico digital y sus beneficios principales
+ * Primera interacción del usuario con la aplicación
+ */
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useNavigate } from 'react-router-dom';
@@ -11,6 +16,11 @@ import {
   ArrowRight
 } from 'lucide-react';
 
+/**
+ * Componente principal de la página de inicio
+ * Gestiona la navegación y la presentación de características principales
+ * Adapta la experiencia según el estado de autenticación del usuario
+ */
 const Landing = () => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthContext();

@@ -1,3 +1,8 @@
+/**
+ * Página de inicio de sesión
+ * Maneja la autenticación de usuarios mediante correo y contraseña
+ * Proporciona acceso al registro y recuperación de contraseña
+ */
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
@@ -9,14 +14,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 
+/**
+ * Componente principal de la página de inicio de sesión
+ * Gestiona el formulario y el proceso de autenticación
+ */
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
   const { login: loginContext } = useAuthContext();
   const { toast } = useToast();
-
-  // useMutation para manejar la llamada a la API
   const { mutate: loginUser, isPending } = useMutation({
     mutationFn: authService.login,
     onSuccess: (data) => {
@@ -25,11 +32,9 @@ const Login = () => {
         description: "Bienvenido de vuelta.",
         duration: 2500,
       });
-      // Simplemente pasamos el token al contexto. El contexto se encarga del resto.
       loginContext(data.access_token);
     },
     onError: (error) => {
-      // Si la API devuelve un error (ej. 401 Unauthorized), mostramos una notificación
       console.error("Error de inicio de sesión:", error);
       toast({
         title: "Error de inicio de sesión",

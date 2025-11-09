@@ -1,3 +1,8 @@
+/**
+ * Página de recuperación de contraseña
+ * Permite a los usuarios solicitar un enlace para restablecer su contraseña
+ * mediante su correo electrónico registrado.
+ */
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
@@ -8,6 +13,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 
+/**
+ * Componente principal de la página de recuperación de contraseña
+ * Gestiona el formulario y el proceso de solicitud de restablecimiento
+ */
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
   const { toast } = useToast();
@@ -72,7 +81,6 @@ const ForgotPassword = () => {
                   {isPending ? 'Enviando...' : 'Enviar Enlace de Recuperación'}
                 </Button>
               </form>
-              {/* AÑADIMOS ESTE BLOQUE */}
               <div className="mt-4 text-center text-sm">
                   <Link to="/login" className="underline text-gray-500 hover:text-primary">
                       &larr; Volver a Iniciar Sesión

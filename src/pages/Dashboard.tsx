@@ -1,3 +1,8 @@
+/**
+ * Dashboard principal de la aplicación
+ * Muestra el resumen del usuario, acciones principales y el historial de diagnósticos
+ * Permite iniciar nuevos diagnósticos y ver resultados anteriores
+ */
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useAuthContext } from '@/contexts/AuthContext';
@@ -7,7 +12,11 @@ import { Card, CardContent, CardTitle, CardDescription } from '@/components/ui/c
 import { Skeleton } from '@/components/ui/skeleton';
 import { History, FileText } from 'lucide-react'
 
-// Helper para formatear la fecha de una manera más amigable
+/**
+ * Formatea una fecha ISO a un formato legible en español
+ * @param dateString - Fecha en formato ISO
+ * @returns Fecha formateada (ejemplo: "15 de noviembre de 2025")
+ */
 const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString('es-ES', {
     year: 'numeric',
@@ -16,6 +25,11 @@ const formatDate = (dateString: string) => {
   });
 };
 
+/**
+ * Componente principal del Dashboard
+ * Gestiona la visualización de la información del usuario,
+ * sus diagnósticos previos y el acceso a nuevas evaluaciones
+ */
 const Dashboard = () => {
   const { user, logout } = useAuthContext();
 
