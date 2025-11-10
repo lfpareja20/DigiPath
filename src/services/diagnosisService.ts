@@ -18,6 +18,6 @@ export const getDiagnosisHistory = async (): Promise<Diagnosis[]> => {
 };
 
 export const getDiagnosisReport = async (diagnosisId: number): Promise<DiagnosisReport> => {
-    const { data } = await apiClient.get<DiagnosisReport>(`/diagnosis/${diagnosisId}/report`);
+    const { data } = await apiClient.get<DiagnosisReport>(`/diagnosis/${diagnosisId}/report/`);
     return data;
 };
