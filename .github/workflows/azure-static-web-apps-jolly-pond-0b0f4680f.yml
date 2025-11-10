@@ -33,7 +33,7 @@ jobs:
           output_location: "dist" # Built app content directory - optional
         env:
           VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
-          ###### End of Repository/Build Configurations ######
+          ##### End of Repository/Build Configurations ######
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
