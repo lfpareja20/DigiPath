@@ -11,7 +11,7 @@ const apiClient = axios.create({
   },
 });
 
-// 3. Este es el "interceptor": una pieza de código que se ejecuta
+// 3. Este es el "interceptor", una pieza de código que se ejecuta
 //    ANTES de que CADA petición sea enviada.
 //    Su trabajo es buscar el token en localStorage y añadirlo a la cabecera.
 apiClient.interceptors.request.use(
