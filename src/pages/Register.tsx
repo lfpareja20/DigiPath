@@ -15,6 +15,7 @@ const Register = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
+  const [confirmPassword, setConfirmPassword] = useState('');
   const { toast } = useToast();
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const { mutate: registerUser, isPending } = useMutation({
@@ -39,21 +40,24 @@ const Register = () => {
             // Caso 1: El error es un texto simple (ej. "El usuario ya existe")
             errorMessage = errorDetail;
           } else if (Array.isArray(errorDetail)) {
-            // Caso 2: El error es un array de validación de Pydantic
-            // Tomamos el mensaje del PRIMER error del array.
             const firstError = errorDetail[0];
-            if (firstError && firstError.msg) {
-              errorMessage = firstError.msg;
-            }
-          }
+        
+        if (firstError.loc.includes('ruc')) {
+            errorMessage = "El RUC debe contener exactamente 11 números.";
+        } else if (firstError.loc.includes('contrasena')) {
+            errorMessage = "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un símbolo especial.";
+        } else {
+            errorMessage = "Por favor, revise que todos los campos estén llenos correctamente.";
+        }
+      }
 
-          toast({
-            title: "Error de registro",
-            description: errorMessage, // Ahora errorMessage es siempre un texto
-            variant: "destructive",
-          });
-        },
-    });
+      toast({
+        title: "Error al registrarse",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    },
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,6 +69,16 @@ const Register = () => {
       });
       return; // Detiene el envío del formulario
     }
+
+    if (password !== confirmPassword) {
+        toast({
+            title: "Las contraseñas no coinciden",
+            description: "Asegúrese de escribir exactamente la misma contraseña en ambos campos.",
+            variant: "destructive",
+        });
+        return; // Detenemos el envío
+    }
+
     registerUser({
       nombre_empresa: nombreEmpresa,
       ruc: ruc,
@@ -98,6 +112,11 @@ const Register = () => {
             <div className="space-y-2">
               <Label htmlFor="password">Contraseña</Label>
               <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+              <p className="text-xs text-gray-500">Mín. 8 caracteres, incluyendo mayúscula, minúscula, número y símbolo especial.</p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirmar Contraseña</Label>
+              <Input id="confirmPassword" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
             </div>
             <div className="flex items-center space-x-2 pt-2">
               <Checkbox

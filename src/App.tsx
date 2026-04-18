@@ -45,7 +45,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    {/* 1. BrowserRouter AHORA ENVUELVE A TODO LO DEMÁS */}
+    {/* 1. BrowserRouter */}
     <BrowserRouter>
       <AuthProvider>
         <QuestionnaireProvider>

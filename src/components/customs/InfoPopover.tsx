@@ -9,14 +9,15 @@ interface InfoPopoverProps {
 
 export const InfoPopover = ({ title, content }: InfoPopoverProps) => (
   <Popover>
-    <PopoverTrigger asChild>
-      <Button variant="ghost" size="icon" className="h-5 w-5 text-muted-foreground hover:bg-transparent">
-        <Info className="h-4 w-4" />
-      </Button>
+    <PopoverTrigger className="inline-flex items-center justify-center rounded-full h-6 w-6 text-primary hover:bg-primary/10 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/50">
+      <Info className="h-4 w-4" />
     </PopoverTrigger>
-    <PopoverContent>
-      <h4 className="font-semibold text-sm mb-2">{title}</h4>
-      <div className="text-sm text-muted-foreground space-y-2">{content}</div>
+    
+    <PopoverContent side="top" className="w-80 shadow-lg">
+      <div className="space-y-2">
+        <h4 className="font-semibold leading-none text-foreground">{title}</h4>
+        <div className="text-sm text-muted-foreground leading-relaxed">{content}</div>
+      </div>
     </PopoverContent>
   </Popover>
 );

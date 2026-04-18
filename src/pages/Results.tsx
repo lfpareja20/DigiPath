@@ -30,7 +30,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { FactorImpacto } from "@/types";
 import { CircularProgress } from "@/components/customs/CircularProgress";
-import { BarChart, ArrowUpCircle, TrendingDown, TrendingUp, Lightbulb } from "lucide-react";
+import { BarChart, ArrowUpCircle, TrendingDown, TrendingUp, Lightbulb, ArrowRight } from "lucide-react";
 import { InfoPopover } from "@/components/customs/InfoPopover";
 
 // Registramos los componentes necesarios para Chart.js
@@ -69,8 +69,15 @@ const ImpactFactorCard = ({ factor, type }: { factor: FactorImpacto, type: 'DEBI
                     </div>
                 </div>
             </CardHeader>
-            <CardContent className="pl-12">
-                <p className="text-sm text-muted-foreground">{factor.porque}</p>
+            <CardContent className="pl-12 flex-grow flex flex-col justify-between">
+                <p className="text-sm text-muted-foreground leading-relaxed">{factor.porque}</p>
+                
+                {/* "Call to Action" solo para las debilidades */}
+                {isDebilidad && (
+                    <div className="mt-4 pt-3 border-t border-destructive/10 flex items-center text-xs font-semibold text-destructive/80 group-hover:text-destructive transition-colors">
+                        Ver plan de acción <ArrowRight className="ml-1.5 h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
+                    </div>
+                )}
             </CardContent>
         </Card>
     );

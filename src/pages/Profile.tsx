@@ -71,7 +71,7 @@ const Profile = () => {
     <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
       <div className="max-w-2xl mx-auto">
         <Button variant="outline" asChild className="mb-4">
-            <Link to="/dashboard">&larr; Volver al Dashboard</Link>
+          <Link to="/dashboard">&larr; Volver al Dashboard</Link>
         </Button>
 
         <Card>
@@ -85,30 +85,45 @@ const Profile = () => {
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="email">Correo electrónico</Label>
-                <Input id="email" type="email" value={user.correo_electronico} disabled />
-                <p className="text-xs text-gray-500">El correo electrónico no se puede modificar.</p>
+                <Input
+                  id="email"
+                  type="email"
+                  value={user.correo_electronico}
+                  disabled
+                />
+                <p className="text-xs text-gray-500">
+                  El correo electrónico no se puede modificar.
+                </p>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="nombre_empresa">Nombre de la Empresa</Label>
-                <Input 
-                  id="nombre_empresa" 
-                  value={nombreEmpresa} 
-                  onChange={(e) => setNombreEmpresa(e.target.value)} 
-                  required 
+                <Input
+                  id="nombre_empresa"
+                  value={nombreEmpresa}
+                  onChange={(e) => setNombreEmpresa(e.target.value)}
+                  required
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="ruc">RUC</Label>
-                <Input 
-                  id="ruc" 
-                  value={ruc} 
-                  onChange={(e) => setRuc(e.target.value)} 
-                  required 
+                <Input
+                  id="ruc"
+                  value={ruc}
+                  onChange={(e) => {
+                    // 1. Reemplaza cualquier cosa que NO sea un número por una cadena vacía
+                    const soloNumeros = e.target.value.replace(/[^0-9]/g, "");
+                    // 2. Solo actualiza el estado si la longitud es 11 o menos
+                    if (soloNumeros.length <= 11) {
+                      setRuc(soloNumeros);
+                    }
+                  }}
+                  maxLength={11} // Evita que el navegador deje escribir más visualmente
+                  required
                 />
               </div>
               <div className="flex justify-end">
                 <Button type="submit" disabled={isPending}>
-                  {isPending ? 'Guardando...' : 'Guardar Cambios'}
+                  {isPending ? "Guardando..." : "Guardar Cambios"}
                 </Button>
               </div>
             </form>
