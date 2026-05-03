@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Rocket } from 'lucide-react'; // Añadido solo para el logo UI
 
 const Register = () => {
   const [nombreEmpresa, setNombreEmpresa] = useState('');
@@ -15,9 +16,9 @@ const Register = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const[confirmPassword, setConfirmPassword] = useState('');
   const { toast } = useToast();
-  const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const[agreedToTerms, setAgreedToTerms] = useState(false);
   const { mutate: registerUser, isPending } = useMutation({
         mutationFn: authService.register,
         onSuccess: () => {
@@ -90,60 +91,125 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="text-2xl">Crear Cuenta</CardTitle>
+    <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC] relative overflow-hidden font-sans selection:bg-blue-100 p-4 sm:py-12">
+      
+      {/* Brillos de fondo (Background Glows) */}
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-100/40 blur-[120px] rounded-full pointer-events-none -z-10"></div>
+      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-emerald-100/30 blur-[120px] rounded-full pointer-events-none -z-10"></div>
+
+      <Card className="w-full max-w-lg bg-white/80 backdrop-blur-xl border border-white shadow-2xl shadow-blue-900/5 rounded-[2rem] p-2 sm:p-6 z-10">
+        <CardHeader className="flex flex-col items-center space-y-4 pb-6">
+          {/* Logo DigiPath */}
+          <div className="flex items-center gap-2 group cursor-default">
+            <div className="bg-gradient-to-br from-blue-600 to-emerald-400 p-2 rounded-xl text-white shadow-md shadow-blue-200 group-hover:scale-105 transition-transform duration-300">
+              <Rocket className="w-6 h-6" />
+            </div>
+            <span className="text-2xl font-black tracking-tight text-slate-900">
+              Digi<span className="text-blue-600">Path</span>
+            </span>
+          </div>
+          <CardTitle className="text-2xl font-black text-slate-900 tracking-tight text-center">
+            Crear Cuenta
+          </CardTitle>
         </CardHeader>
+        
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="nombre_empresa">Nombre de la Empresa</Label>
-              <Input id="nombre_empresa" value={nombreEmpresa} onChange={(e) => setNombreEmpresa(e.target.value)} required />
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="space-y-2.5">
+              <Label htmlFor="nombre_empresa" className="text-slate-700 font-bold ml-1">Nombre de la Empresa</Label>
+              <Input 
+                id="nombre_empresa" 
+                value={nombreEmpresa} 
+                onChange={(e) => setNombreEmpresa(e.target.value)} 
+                required 
+                className="h-12 bg-slate-50/50 border-slate-200 text-slate-900 rounded-xl focus-visible:ring-blue-500 focus-visible:border-blue-500 transition-all px-4"
+              />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="ruc">RUC</Label>
-              <Input id="ruc" value={ruc} onChange={(e) => setRuc(e.target.value)} required />
+            
+            <div className="space-y-2.5">
+              <Label htmlFor="ruc" className="text-slate-700 font-bold ml-1">RUC</Label>
+              <Input 
+                id="ruc" 
+                value={ruc} 
+                onChange={(e) => setRuc(e.target.value)} 
+                required 
+                className="h-12 bg-slate-50/50 border-slate-200 text-slate-900 rounded-xl focus-visible:ring-blue-500 focus-visible:border-blue-500 transition-all px-4"
+              />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">Correo electrónico</Label>
-              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+            
+            <div className="space-y-2.5">
+              <Label htmlFor="email" className="text-slate-700 font-bold ml-1">Correo electrónico</Label>
+              <Input 
+                id="email" 
+                type="email" 
+                value={email} 
+                onChange={(e) => setEmail(e.target.value)} 
+                required 
+                className="h-12 bg-slate-50/50 border-slate-200 text-slate-900 rounded-xl focus-visible:ring-blue-500 focus-visible:border-blue-500 transition-all px-4"
+              />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Contraseña</Label>
-              <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-              <p className="text-xs text-gray-500">Mín. 8 caracteres, incluyendo mayúscula, minúscula, número y símbolo especial.</p>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div className="space-y-2.5">
+                <Label htmlFor="password" className="text-slate-700 font-bold ml-1">Contraseña</Label>
+                <Input 
+                  id="password" 
+                  type="password" 
+                  value={password} 
+                  onChange={(e) => setPassword(e.target.value)} 
+                  required 
+                  className="h-12 bg-slate-50/50 border-slate-200 text-slate-900 rounded-xl focus-visible:ring-blue-500 focus-visible:border-blue-500 transition-all px-4"
+                />
+              </div>
+              <div className="space-y-2.5">
+                <Label htmlFor="confirmPassword" className="text-slate-700 font-bold ml-1">Confirmar Contraseña</Label>
+                <Input 
+                  id="confirmPassword" 
+                  type="password" 
+                  value={confirmPassword} 
+                  onChange={(e) => setConfirmPassword(e.target.value)} 
+                  required 
+                  className="h-12 bg-slate-50/50 border-slate-200 text-slate-900 rounded-xl focus-visible:ring-blue-500 focus-visible:border-blue-500 transition-all px-4"
+                />
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirmar Contraseña</Label>
-              <Input id="confirmPassword" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
-            </div>
-            <div className="flex items-center space-x-2 pt-2">
+            <p className="text-xs font-medium text-slate-400 ml-1">
+              Mín. 8 caracteres, incluyendo mayúscula, minúscula, número y símbolo especial.
+            </p>
+
+            <div className="flex items-center space-x-3 pt-3 pb-1 bg-slate-50/50 p-4 rounded-xl border border-slate-100">
               <Checkbox
                 id="terms"
                 checked={agreedToTerms}
                 onCheckedChange={(checked) => setAgreedToTerms(checked as boolean)}
                 disabled={isPending}
+                className="border-slate-300 text-blue-600 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
               />
-              <Label htmlFor="terms" className="text-sm font-light text-muted-foreground">
+              <Label htmlFor="terms" className="text-sm font-medium text-slate-600 leading-relaxed cursor-pointer">
                 He leído y acepto los{' '}
                 <Link
                   to="/terms-and-conditions"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="underline hover:text-primary font-medium"
+                  className="text-blue-600 font-bold hover:text-blue-700 hover:underline transition-colors"
                 >
                   Términos y Condiciones
                 </Link>
               </Label>
             </div>
-            <Button type="submit" className="w-full" disabled={isPending}>
+            
+            <Button 
+              type="submit" 
+              className="w-full h-12 bg-[#0B0F19] text-white hover:bg-slate-800 font-bold rounded-xl shadow-lg shadow-slate-200 transition-all active:scale-95 border-0 mt-2" 
+              disabled={isPending}
+            >
               {isPending ? 'Creando cuenta...' : 'Crear Cuenta'}
             </Button>
           </form>
-          <div className="mt-4 text-center text-sm">
+          
+          <div className="mt-8 text-center text-sm font-medium text-slate-500">
             ¿Ya tiene una cuenta?{' '}
-            <Link to="/login" className="underline">
+            <Link to="/login" className="text-blue-600 font-bold hover:text-blue-700 hover:underline transition-colors">
               Iniciar sesión
             </Link>
           </div>

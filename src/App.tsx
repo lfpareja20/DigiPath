@@ -17,6 +17,8 @@ import NotFound from "./pages/NotFound";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import TermsAndConditions from "./pages/TermsAndConditions";
+import ActionPlan from "./pages/ActionPlan";
+import { Navbar } from "@/components/customs/Navbar";
 
 const queryClient = new QueryClient();
 
@@ -53,6 +55,7 @@ const App = () => (
             <TooltipProvider>
               <Toaster />
               <Sonner />
+              <Navbar />
               <Routes>
                 <Route path="/" element={<Landing />} />
                 <Route path="/login" element={<Login />} />
@@ -60,6 +63,10 @@ const App = () => (
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
+                <Route 
+                path="/action-plan/:id_diagnostico" 
+                element={ <ProtectedRoute> <ActionPlan /> </ProtectedRoute> } 
+                />
                 <Route 
                   path="/dashboard" 
                   element={ <ProtectedRoute> <Dashboard /> </ProtectedRoute> } 

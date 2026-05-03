@@ -44,6 +44,8 @@ export interface FactorImpacto {
   peso_impacto: number;
   porque: string;
   accion: string | null;
+  respuesta_usuario?: string;
+  texto_pregunta?: string;
 }
 
 // Coincide con el esquema `Pregunta` del backend

@@ -7,6 +7,7 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import * as diagnosisService from "@/services/diagnosisService";
 import { Bar } from "react-chartjs-2";
+import { useState, useEffect } from 'react';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -24,13 +25,14 @@ import {
   DialogTitle,
   DialogTrigger,
   DialogDescription,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { FactorImpacto } from "@/types";
 import { CircularProgress } from "@/components/customs/CircularProgress";
-import { BarChart, ArrowUpCircle, TrendingDown, TrendingUp, Lightbulb, ArrowRight } from "lucide-react";
+import { BarChart, ArrowUpCircle, TrendingDown, TrendingUp, Lightbulb, ArrowRight, Target, PartyPopper, Award, Rocket, MessageSquare, ArrowLeft, BrainCircuit } from "lucide-react";
 import { InfoPopover } from "@/components/customs/InfoPopover";
 
 // Registramos los componentes necesarios para Chart.js
@@ -84,29 +86,80 @@ const ImpactFactorCard = ({ factor, type }: { factor: FactorImpacto, type: 'DEBI
 
     // Si es una debilidad, envolvemos la tarjeta en un Dialog para mostrar la acción
     if (isDebilidad) {
+        const renderRespuestaVisual = (respuesta: string) => {
+            const num = parseInt(respuesta);
+            if (!isNaN(num) && num >= 1 && num <= 7) {
+                return (
+                    <div className="flex items-center gap-1">
+                        {[1, 2, 3, 4, 5, 6, 7].map(i => (
+                            <div key={i} className={`h-2 w-4 rounded-sm ${i <= num ? 'bg-primary' : 'bg-slate-200'}`} />
+                        ))}
+                        <span className="ml-2 font-black text-primary">{num}/7</span>
+                    </div>
+                );
+            }
+            return <span className="font-black text-primary uppercase bg-primary/10 px-3 py-1 rounded-md">{respuesta}</span>;
+        };
+
         return (
             <Dialog>
                 <DialogTrigger asChild>
-                    <div><CardContentLayout /></div>
+                    <div className="h-full"><CardContentLayout /></div>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-[425px]">
-                    <DialogHeader>
-                        <DialogTitle className="flex items-center gap-2">
-                           <Lightbulb className="h-5 w-5 text-yellow-500" />
-                           Acción Recomendada
-                        </DialogTitle>
-                        <DialogDescription>
-                           Para mejorar en: <span className="font-semibold text-foreground">{factor.titulo}</span>
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="py-4">
-                        <h4 className="font-semibold mb-2">Problema Identificado:</h4>
-                        <p className="text-muted-foreground mb-4">{factor.porque}</p>
+                <DialogContent className="sm:max-w-[550px] p-0 overflow-hidden rounded-3xl border-slate-200 shadow-2xl bg-white">
+                    
+                    {/* HEADER ELEGANTE */}
+                    <div className="px-6 pt-6 pb-4 border-b border-slate-100 flex items-start gap-4">
+                        <div className="bg-red-50 p-3 rounded-2xl">
+                            <Lightbulb className="h-6 w-6 text-red-500" />
+                        </div>
+                        <div>
+                            <DialogTitle className="text-xl font-extrabold text-slate-800 tracking-tight">{factor.titulo}</DialogTitle>
+                            <DialogDescription className="text-sm font-medium text-slate-500 mt-1">
+                                Oportunidad estratégica detectada
+                            </DialogDescription>
+                        </div>
+                    </div>
+                    
+                    <div className="p-6 space-y-6">
                         
-                        <h4 className="font-semibold mb-2">Próximo Paso Sugerido:</h4>
-                        <p className="text-foreground bg-primary/10 p-4 rounded-md border border-primary/20">
-                           {factor.accion}
-                        </p>
+                        {/* EL CONTEXTO: ¿Qué preguntó y qué respondió? */}
+                        <div className="bg-slate-50 rounded-2xl p-5 border border-slate-100 shadow-inner">
+                            <div className="flex items-center gap-2 mb-3">
+                                <MessageSquare className="w-4 h-4 text-slate-400" />
+                                <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Contexto de tu evaluación</h4>
+                            </div>
+                            <p className="text-sm text-slate-700 font-medium mb-4 leading-relaxed">
+                                "{factor.texto_pregunta}"
+                            </p>
+                            <div className="flex items-center justify-between bg-white border border-slate-200 p-3 rounded-xl shadow-sm">
+                                <span className="text-xs font-bold text-slate-400 uppercase">Tu Respuesta:</span>
+                                {renderRespuestaVisual(factor.respuesta_usuario || "")}
+                            </div>
+                        </div>
+
+                        {/* DIAGNÓSTICO DE LA IA */}
+                        <div>
+                            <div className="flex items-center gap-2 mb-2">
+                                <BrainCircuit className="w-4 h-4 text-primary" />
+                                <h4 className="text-xs font-bold text-primary uppercase tracking-wider">Análisis de la IA</h4>
+                            </div>
+                            <p className="text-sm text-slate-600 leading-relaxed pl-6 border-l-2 border-primary/20">
+                                {factor.porque}
+                            </p>
+                        </div>
+                        
+                        {/* PLAN DE ACCIÓN */}
+                        <div>
+                            <div className="flex items-center gap-2 mb-2">
+                                <Target className="w-4 h-4 text-emerald-600" />
+                                <h4 className="text-xs font-bold text-emerald-600 uppercase tracking-wider">Paso Sugerido</h4>
+                            </div>
+                            <div className="bg-emerald-50/50 p-4 rounded-2xl border border-emerald-100 text-sm font-medium text-slate-800 leading-relaxed shadow-sm">
+                                {factor.accion}
+                            </div>
+                        </div>
+
                     </div>
                 </DialogContent>
             </Dialog>
@@ -130,6 +183,18 @@ const Results = () => {
     queryFn: () => diagnosisService.getDiagnosisReport(Number(diagnosisId)),
     enabled: !!diagnosisId, // Solo ejecuta la consulta si diagnosisId existe
   });
+
+  const[showWelcomeModal, setShowWelcomeModal] = useState(false);
+
+  useEffect(() => {
+    if (report) {
+      // Mostrar el modal solo la primera vez que se visita este reporte en la sesión
+      if (!sessionStorage.getItem(`welcome_modal_${report.id_diagnostico}`)) {
+        setShowWelcomeModal(true);
+        sessionStorage.setItem(`welcome_modal_${report.id_diagnostico}`, 'true');
+      }
+    }
+  }, [report]);
 
   // --- RENDERIZADO CONDICIONAL ---
   if (isLoading) {
@@ -211,24 +276,118 @@ const Results = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
-      <Button variant="outline" asChild className="mb-4">
-        <Link to="/dashboard">&larr; Volver al Dashboard</Link>
+      {/* MODAL UNIFICADO: BIENVENIDA A RESULTADOS (DISEÑO PREMIUM PARA TODOS) */}
+      <Dialog open={showWelcomeModal} onOpenChange={setShowWelcomeModal}>
+        <DialogContent className="sm:max-w-[500px] border-0 p-0 overflow-hidden shadow-2xl rounded-2xl">
+          {/* Cabecera dinámica según el nivel */}
+          <div
+            className={`p-8 text-center relative overflow-hidden ${
+              report?.nivel_madurez_predicho === "Maestro Digital"
+                ? "bg-gradient-to-r from-emerald-600 to-teal-800"
+                : "bg-gradient-to-r from-slate-900 to-slate-800"
+            }`}
+          >
+            <div className="absolute top-0 right-0 opacity-10">
+              {report?.nivel_madurez_predicho === "Maestro Digital" ? (
+                <PartyPopper className="w-32 h-32 transform translate-x-8 -translate-y-8" />
+              ) : (
+                <Target className="w-32 h-32 transform translate-x-8 -translate-y-8" />
+              )}
+            </div>
+
+            <div className="relative z-10">
+              <div className="bg-white/20 w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4 ring-4 ring-white/30 backdrop-blur-sm">
+                {report?.nivel_madurez_predicho === "Maestro Digital" ? (
+                  <Award className="w-8 h-8 text-white" />
+                ) : (
+                  <Rocket className="w-8 h-8 text-white" />
+                )}
+              </div>
+              <h2 className="text-2xl font-black text-white tracking-tight">
+                {report?.nivel_madurez_predicho === "Maestro Digital"
+                  ? "¡Objetivo Alcanzado!"
+                  : "¡Tu Diagnóstico está Listo!"}
+              </h2>
+              <p className="text-white/80 mt-2 font-medium">
+                Eres nivel:{" "}
+                <span className="font-bold text-white">
+                  {report?.nivel_madurez_predicho}
+                </span>
+              </p>
+            </div>
+          </div>
+
+          {/* Cuerpo del mensaje dinámico */}
+          <div className="p-6 text-center space-y-4 bg-white">
+            <p className="text-slate-600 leading-relaxed">
+              {report?.nivel_madurez_predicho === "Maestro Digital"
+                ? "¡Excelente trabajo! Mantienes la excelencia en tus capacidades, pero la mejora continua es clave. Hemos detectado algunos puntos de perfeccionamiento."
+                : "La Inteligencia Artificial ha analizado tus respuestas y ha creado una ruta de mejora priorizada específicamente para tu empresa."}
+            </p>
+            <div className="bg-blue-50 border border-blue-100 p-4 rounded-xl">
+              <p className="text-sm text-blue-800 font-medium">
+                🚀 Pasa a la acción en tu <b>Centro de Transformación</b>.
+                Podrás simular tu crecimiento y gestionar tus tareas en tiempo
+                real.
+              </p>
+            </div>
+            <div className="pt-2 flex flex-col sm:flex-row gap-3 justify-center">
+              <Button
+                asChild
+                className="bg-primary hover:bg-primary/90 w-full sm:w-auto shadow-md"
+              >
+                <Link to={`/action-plan/${report?.id_diagnostico}`}>
+                  Ir al Centro de Transformación
+                </Link>
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setShowWelcomeModal(false)}
+                className="w-full sm:w-auto"
+              >
+                Ver Reporte Completo
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Button
+        variant="ghost"
+        asChild
+        className="text-slate-700 hover:text-primary hover:bg-primary/10 transition-colors group"
+      >
+        <Link to="/dashboard">
+          <ArrowLeft className="w-4 h-4 mr-2 transition-transform group-hover:-translate-x-1" />
+          Volver al Dashboard
+        </Link>
       </Button>
 
       <div className="max-w-4xl mx-auto space-y-8">
-        {/* Cabecera del Reporte */}
-        <header>
-          <h1 className="text-3xl font-bold text-gray-800">
-            Resultados de su Diagnóstico
-          </h1>
-          <p className="text-gray-500">
-            Realizado el{" "}
-            {new Date(report.fecha_diagnostico).toLocaleDateString("es-ES", {
-              day: "numeric",
-              month: "long",
-              year: "numeric",
-            })}
-          </p>
+        {/* CABECERA CON BOTÓN SUPERIOR */}
+        <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-800">
+              Resultados del Diagnóstico
+            </h1>
+            <p className="text-slate-500 font-medium mt-1">
+              Realizado el{" "}
+              {new Date(report.fecha_diagnostico).toLocaleDateString("es-ES", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              })}
+            </p>
+          </div>
+          <Button
+            asChild
+            size="lg"
+            className="bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90 shadow-md whitespace-nowrap"
+          >
+            <Link to={`/action-plan/${report.id_diagnostico}`}>
+              Ir al Centro de Transformación <Target className="w-5 h-5 ml-2" />
+            </Link>
+          </Button>
         </header>
 
         {/* Resumen Ejecutivo */}
@@ -295,22 +454,23 @@ const Results = () => {
 
         {/* Gráfico de Desglose por Dominios */}
         <Card>
-        <CardHeader>
+          <CardHeader>
             <div className="flex items-center gap-3">
-                <BarChart className="h-5 w-5 text-muted-foreground"/>
-                <CardTitle>Desglose de Rendimiento por Dominio</CardTitle>
+              <BarChart className="h-5 w-5 text-muted-foreground" />
+              <CardTitle>Desglose de Rendimiento por Dominio</CardTitle>
             </div>
             <p className="text-sm text-muted-foreground pt-1">
-                Su puntaje promedio (escala 1-7) en cada una de las 7 áreas clave de la madurez digital.
+              Su puntaje promedio (escala 1-7) en cada una de las 7 áreas clave
+              de la madurez digital.
             </p>
-        </CardHeader>
-        <CardContent>
+          </CardHeader>
+          <CardContent>
             {/* Damos una altura fija al contenedor para un mejor layout */}
-            <div style={{ height: '400px' }}>
-                <Bar data={domainChartData} options={domainChartOptions} />
+            <div style={{ height: "400px" }}>
+              <Bar data={domainChartData} options={domainChartOptions} />
             </div>
-        </CardContent>
-    </Card>
+          </CardContent>
+        </Card>
 
         {/* Áreas de Mejora Prioritarias (Debilidades) */}
         <div>
@@ -342,20 +502,25 @@ const Results = () => {
           </div>
         </div>
         {/* Call to Action Final */}
-            <div className="text-center p-8 bg-card border rounded-lg shadow-sm">
-                <h3 className="text-xl font-semibold mb-2">¿Qué sigue?</h3>
-                <p className="text-muted-foreground mb-6 max-w-xl mx-auto">
-                    Ha completado su diagnóstico. Aplique las recomendaciones y realice una nueva evaluación en 3 meses para medir su progreso y descubrir nuevas oportunidades.
-                </p>
-                <div className="flex justify-center gap-4">
-                    <Button asChild>
-                        <Link to="/questionnaire">Realizar Nuevo Diagnóstico</Link>
-                    </Button>
-                    <Button variant="outline" asChild>
-                        <Link to="/dashboard">Ver Historial</Link>
-                    </Button>
-                </div>
-            </div>
+        <div className="text-center p-8 bg-card border rounded-lg shadow-sm">
+          <h3 className="text-xl font-semibold mb-2">¿Qué sigue?</h3>
+          <p className="text-muted-foreground mb-6 max-w-xl mx-auto">
+            Ha completado su diagnóstico. Aplique las recomendaciones en el
+            centro de transformación para medir su progreso y descubrir nuevas
+            oportunidades.
+          </p>
+          <div className="flex justify-center gap-4">
+            <Button asChild>
+              <Link to={`/action-plan/${report.id_diagnostico}`}>
+                Ir a mi Centro de Transformación{" "}
+                <Target className="w-5 h-5 ml-2" />
+              </Link>
+            </Button>
+            <Button variant="outline" asChild>
+              <Link to="/dashboard">Ver Historial</Link>
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
   );
