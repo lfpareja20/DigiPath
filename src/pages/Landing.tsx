@@ -49,7 +49,7 @@ const Landing = () => {
         </div>
 
         <h1 className="text-5xl md:text-7xl lg:text-8xl font-black text-slate-900 tracking-tight max-w-5xl mb-6 leading-[1.1]">
-          Evoluciona tu taller hacia la <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-blue-400 to-emerald-400">Madurez Digital</span>
+          Evoluciona tu negocio hacia la <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-blue-400 to-emerald-400">Madurez Digital</span>
         </h1>
         
         <p className="text-lg md:text-xl text-slate-600 font-medium max-w-2xl mb-10 leading-relaxed">
@@ -127,7 +127,7 @@ const Landing = () => {
       <section className="py-24 max-w-7xl mx-auto px-6 bg-white">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-5xl font-black text-slate-900">
-            No es un Excel. Es <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-emerald-400">Ingeniería de Software.</span>
+            No es un Excel. Es <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-emerald-400">Ingeniería de Datos.</span>
           </h2>
         </div>
 
@@ -136,7 +136,7 @@ const Landing = () => {
           <div className="md:col-span-2 bg-gradient-to-br from-blue-50 to-white rounded-3xl p-8 border border-blue-200 shadow-sm hover:border-blue-400 hover:shadow-md transition-all relative overflow-hidden group">
             <div className="absolute right-0 top-0 opacity-5 group-hover:opacity-10 transition-opacity text-blue-600"><BarChart3 className="w-64 h-64 -mr-10 -mt-10"/></div>
             <BrainCircuit className="w-10 h-10 text-blue-600 mb-6"/>
-            <h3 className="text-2xl font-bold text-slate-900 mb-3">Motor Predictivo Inteligente</h3>
+            <h3 className="text-2xl font-bold text-slate-900 mb-3">Motor Analítico Inteligente</h3>
             <p className="text-slate-600 text-lg leading-relaxed max-w-md relative z-10">
               DigiPath no hace simples promedios. Usa un clasificador Random Forest que entiende que la automatización pesa diferente si eres un Principiante o un Conservador Digital. Te evaluamos bajo un contexto real.
             </p>
@@ -236,7 +236,7 @@ const Landing = () => {
               Digi<span className="text-blue-600">Path</span>
             </span>
         </div>
-        <p className="text-slate-500 font-medium text-sm">© {new Date().getFullYear()} Sistema de Diagnóstico Predictivo.</p>
+        <p className="text-slate-500 font-medium text-sm">© {new Date().getFullYear()} Sistema de Diagnóstico Analítico.</p>
         <p className="text-slate-400 text-xs mt-2">Desarrollado para transformar el sector MYPE Manufacturero Peruano.</p>
       </footer>
     </div>

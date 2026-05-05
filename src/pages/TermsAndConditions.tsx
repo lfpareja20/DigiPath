@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router-dom";
+import { ShieldCheck, ArrowLeft } from "lucide-react"; // Añadidos para mejorar el diseño UI
 
 const TermsAndConditions = () => {
   // Genera la fecha actual en un formato legible para la localización de Perú
@@ -10,14 +11,32 @@ const TermsAndConditions = () => {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4">
-      <div className="max-w-4xl mx-auto">
-        <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle className="text-3xl font-bold text-gray-800">Términos y Condiciones de Uso</CardTitle>
-            <p className="text-sm text-muted-foreground">Última actualización: {lastUpdatedDate}</p>
+    <div className="min-h-screen bg-[#F8FAFC] py-12 px-4 sm:px-6 relative overflow-hidden font-sans selection:bg-blue-100">
+      
+      {/* Brillos de fondo fijos (Background Glows fijos para que no se pierdan al scrollear) */}
+      <div className="fixed top-0 left-0 w-[600px] h-[600px] bg-blue-100/40 blur-[120px] rounded-full pointer-events-none -z-10"></div>
+      <div className="fixed bottom-0 right-0 w-[600px] h-[600px] bg-emerald-100/30 blur-[120px] rounded-full pointer-events-none -z-10"></div>
+
+      <div className="max-w-4xl mx-auto relative z-10">
+        <Card className="bg-white/90 backdrop-blur-xl border border-white shadow-2xl shadow-blue-900/5 rounded-[2rem] overflow-hidden">
+          
+          <CardHeader className="px-8 sm:px-12 pt-12 pb-8 border-b border-slate-100/80 bg-slate-50/50">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-5">
+              <div className="bg-blue-100 border border-blue-200 p-3.5 rounded-2xl shadow-sm w-fit">
+                <ShieldCheck className="w-8 h-8 text-blue-600" />
+              </div>
+              <div>
+                <CardTitle className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight leading-tight">
+                  Términos y Condiciones de Uso
+                </CardTitle>
+                <p className="text-sm font-bold text-slate-400 mt-2 uppercase tracking-widest">
+                  Última actualización: <span className="text-blue-600">{lastUpdatedDate}</span>
+                </p>
+              </div>
+            </div>
           </CardHeader>
-          <CardContent className="prose prose-lg max-w-none prose-headings:font-bold prose-a:text-primary hover:prose-a:underline">
+          
+          <CardContent className="px-8 sm:px-12 py-10 prose prose-slate max-w-none prose-headings:font-black prose-headings:tracking-tight prose-h3:text-2xl prose-h3:text-slate-800 prose-h3:mt-10 prose-h3:mb-4 prose-p:text-slate-600 prose-p:leading-relaxed prose-p:font-medium prose-li:text-slate-600 prose-li:font-medium prose-li:marker:text-blue-500 prose-a:text-blue-600 hover:prose-a:text-blue-700 prose-a:font-bold prose-a:no-underline hover:prose-a:underline transition-colors">
             
             <h3>1. Aceptación de los Términos</h3>
             <p>
@@ -77,9 +96,10 @@ const TermsAndConditions = () => {
               </a>.
             </p>
 
-            <div className="mt-12 text-center not-prose">
-                <Link to="/register" className="text-primary hover:underline font-medium">
-                    &larr; Volver a la página de registro
+            {/* BOTÓN DE RETORNO MODERNO */}
+            <div className="mt-12 pt-8 border-t border-slate-100 text-center not-prose">
+                <Link to="/register" className="inline-flex items-center justify-center gap-2 text-slate-500 font-bold hover:text-blue-600 hover:bg-blue-50 px-6 py-3 rounded-xl transition-all group">
+                    <ArrowLeft className="w-5 h-5 transition-transform group-hover:-translate-x-1" /> Volver a la página de registro
                 </Link>
             </div>
           </CardContent>
